@@ -37,6 +37,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Text
@@ -56,8 +64,25 @@ fun OrbitDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         val fr = remember { FocusRequester() }
+        // Окно часто открывается долгим нажатием OK: его автоповтор и отпускание
+        // прилетают уже сюда и «нажимают» первый пункт. Глушим OK до свежего нажатия.
+        var armed by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
+                .onPreviewKeyEvent { ev ->
+                    if (armed) return@onPreviewKeyEvent false
+                    val confirm = ev.key == Key.DirectionCenter || ev.key == Key.Enter ||
+                        ev.key == Key.NumPadEnter || ev.key == Key.ButtonA
+                    if (!confirm) {
+                        armed = true
+                        false
+                    } else if (ev.type == KeyEventType.KeyDown && ev.nativeKeyEvent.repeatCount == 0) {
+                        armed = true
+                        false
+                    } else {
+                        true
+                    }
+                }
                 .width(width.dp)
                 .background(OrbitColors.Panel, RoundedCornerShape(18.dp))
                 .padding(22.dp),
