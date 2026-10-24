@@ -1,0 +1,16 @@
+{
+  "apps": [
+    {
+      "name": "SmartTube",
+      "package": "com.teamsmart.videomanager.tv",
+      "description": "YouTube без рекламы: SponsorBlock, 4K/HDR, фоновое воспроизведение. Стабильная версия.",
+      "url": "https://github.com/yuliskov/SmartTube/releases/download/latest/smarttube_stable.apk"
+    },
+    {
+      "name": "SmartTube Beta",
+      "package": "com.liskovsoft.smarttubetv.beta",
+      "description": "Бета-канал SmartTube — новые фичи раньше, ставится рядом со стабильной.",
+      "url": "https://github.com/yuliskov/SmartTube/releases/download/latest/smarttube_beta.apk"
+    }
+  ]
+}
