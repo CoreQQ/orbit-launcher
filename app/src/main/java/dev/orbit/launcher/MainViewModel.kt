@@ -12,6 +12,8 @@ import dev.orbit.launcher.install.CatalogState
 import dev.orbit.launcher.install.Downloader
 import dev.orbit.launcher.install.InstallBus
 import dev.orbit.launcher.install.InstallEvent
+import dev.orbit.launcher.keys.ButtonStore
+import dev.orbit.launcher.keys.KeyBinding
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,6 +26,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 enum class Screen { Home, Install, Settings }
+
+data class ButtonDraft(val binding: KeyBinding, val isNew: Boolean)
 
 sealed interface InstallState {
     data object Idle : InstallState
@@ -200,6 +204,72 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         prefs.catalogUrl = url
         _catalogUrl.value = prefs.catalogUrl
         loadCatalog()
+    }
+
+    // ---------- кнопки пульта ----------
+
+    val bindings: StateFlow<List<KeyBinding>> = ButtonStore.bindings
+
+    private val _learning = MutableStateFlow(false)
+    val learning: StateFlow<Boolean> = _learning.asStateFlow()
+    val isLearning: Boolean get() = _learning.value
+
+    /** Кнопка, которую сейчас настраиваем (null — редактор закрыт) */
+    private val _draft = MutableStateFlow<ButtonDraft?>(null)
+    val draft: StateFlow<ButtonDraft?> = _draft.asStateFlow()
+
+    private var learnJob: Job? = null
+
+    fun startLearning() {
+        ButtonStore.learning = true
+        _learning.value = true
+        learnJob?.cancel()
+        learnJob = viewModelScope.launch {
+            delay(15_000)
+            if (_learning.value) {
+                stopLearning()
+                toast("Нажатие не дошло до приставки — кнопка ничего не отправляет или её забирает система")
+            }
+        }
+    }
+
+    fun stopLearning() {
+        learnJob?.cancel()
+        _learning.value = false
+        ButtonStore.learning = false
+    }
+
+    fun onKeyLearned(keyCode: Int, scanCode: Int) {
+        stopLearning()
+        val existing = ButtonStore.find(keyCode, scanCode)
+        _draft.value = ButtonDraft(existing ?: KeyBinding(keyCode, scanCode), isNew = existing == null)
+    }
+
+    fun editBinding(b: KeyBinding) {
+        _draft.value = ButtonDraft(b, isNew = false)
+    }
+
+    fun updateDraft(b: KeyBinding) {
+        _draft.value = _draft.value?.copy(binding = b)
+    }
+
+    fun saveDraft() {
+        val d = _draft.value ?: return
+        if (d.binding.short == null && d.binding.long == null) {
+            ButtonStore.remove(d.binding.id)
+        } else {
+            ButtonStore.upsert(d.binding)
+        }
+        _draft.value = null
+    }
+
+    fun deleteDraft() {
+        _draft.value?.let { ButtonStore.remove(it.binding.id) }
+        _draft.value = null
+    }
+
+    fun closeDraft() {
+        _draft.value = null
     }
 
     // ---------- установка ----------

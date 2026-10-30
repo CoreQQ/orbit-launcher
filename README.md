@@ -94,6 +94,18 @@ adb shell pm enable com.google.android.tvlauncher
 У Mi Box S **32-битное** пространство (armeabi-v7a), хотя чип 64-битный. Если APK бывает в разных
 сборках, бери `armeabi-v7a` или `universal`. `arm64-v8a` не встанет (ошибка «несовместим»).
 
+## Кнопки пульта
+
+Настройки → «Кнопки пульта» → «Назначить кнопку…» → нажать кнопку → выбрать действие для короткого и долгого нажатия
+(открыть приложение, недавние, главный Orbit, установка APK, настройки, назад, домой).
+Работает во всех приложениях через службу спец. возможностей. Включить её:
+
+```bash
+adb shell settings put secure enabled_accessibility_services dev.orbit.launcher/dev.orbit.launcher.keys.ButtonService
+adb shell settings put secure accessibility_enabled 1
+```
+Выключить: `adb shell settings delete secure enabled_accessibility_services`.
+
 ## Своя витрина
 
 Залей JSON куда угодно (Vercel, GitHub raw, свой сервер) и укажи URL в Настройках → «Источник витрины».
