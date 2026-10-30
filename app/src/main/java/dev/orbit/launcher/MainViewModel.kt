@@ -1,6 +1,8 @@
 package dev.orbit.launcher
 
 import android.app.Application
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,6 +28,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 enum class Screen { Home, Install, Settings }
+
+const val AIRPLAY_PKG = "com.ionitech.airscreen"
 
 data class ButtonDraft(val binding: KeyBinding, val isNew: Boolean)
 
@@ -84,7 +88,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         refresh()
-        viewModelScope.launch { orbit.packageEvents.collect { refresh() } }
+        viewModelScope.launch {
+            orbit.packageEvents.collect { pkg ->
+                // AirScreen только что поставили (в т.ч. из Play Маркета) → сразу в избранное
+                if (pkg == AIRPLAY_PKG && pkg !in _favorites.value) setFavorites(_favorites.value + pkg)
+                refresh()
+            }
+        }
         viewModelScope.launch { InstallBus.events.collect { onInstallEvent(it) } }
     }
 
@@ -204,6 +214,25 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         prefs.catalogUrl = url
         _catalogUrl.value = prefs.catalogUrl
         loadCatalog()
+    }
+
+    // ---------- AirPlay / Play Маркет ----------
+
+    /** Открыть AirPlay-приёмник; если не установлен — в витрину к нему */
+    fun openAirPlay() {
+        val app = _apps.value.firstOrNull { it.pkg == AIRPLAY_PKG }
+        if (app != null) {
+            launch(app)
+        } else {
+            toast("Установите AirScreen — приёмник AirPlay для iPhone")
+            go(Screen.Install)
+        }
+    }
+
+    fun openStore(pkg: String) {
+        val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg"))
+        val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$pkg"))
+        if (!repo.start(market) && !repo.start(web)) toast("Play Маркет недоступен")
     }
 
     // ---------- кнопки пульта ----------

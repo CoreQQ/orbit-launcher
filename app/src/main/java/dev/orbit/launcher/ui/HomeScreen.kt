@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -105,6 +106,7 @@ fun HomeScreen(vm: MainViewModel) {
         ) {
             item(key = "header") {
                 Header(
+                    onAirPlay = vm::openAirPlay,
                     onInstall = { vm.go(Screen.Install) },
                     onSettings = { vm.go(Screen.Settings) },
                 )
@@ -217,7 +219,7 @@ fun HomeScreen(vm: MainViewModel) {
 }
 
 @Composable
-private fun Header(onInstall: () -> Unit, onSettings: () -> Unit) {
+private fun Header(onAirPlay: () -> Unit, onInstall: () -> Unit, onSettings: () -> Unit) {
     val context = LocalContext.current
     val now by produceState(System.currentTimeMillis()) {
         while (true) {
@@ -249,6 +251,8 @@ private fun Header(onInstall: () -> Unit, onSettings: () -> Unit) {
             )
         }
         Spacer(Modifier.weight(1f))
+        OrbitButton(text = "AirPlay", icon = Icons.Filled.Share, onClick = onAirPlay)
+        HSpacer(14)
         OrbitButton(text = "Установить APK", icon = Icons.Filled.Add, onClick = onInstall)
         HSpacer(14)
         OrbitButton(text = "Настройки", icon = Icons.Filled.Settings, onClick = onSettings)

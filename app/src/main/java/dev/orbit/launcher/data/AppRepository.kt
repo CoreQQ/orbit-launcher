@@ -104,6 +104,7 @@ class AppRepository(private val context: Context) {
             "org.videolan.vlc",
             "org.xbmc.kodi",
             "com.google.android.youtube.tvmusic",
+            "com.ionitech.airscreen",             // AirScreen (AirPlay)
         )
     }
 }
