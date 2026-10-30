@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import dev.orbit.launcher.data.AppRepository
 import dev.orbit.launcher.data.IconCache
 import dev.orbit.launcher.data.Prefs
+import dev.orbit.launcher.keys.ButtonStore
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class OrbitApp : Application() {
@@ -34,6 +35,7 @@ class OrbitApp : Application() {
     override fun onCreate() {
         super.onCreate()
         prefs = Prefs(this)
+        ButtonStore.init(this)
         repo = AppRepository(this)
         icons = IconCache(this)
 
