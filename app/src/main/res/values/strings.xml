@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Orbit</string>
+    <string name="button_service_label">Orbit — кнопки пульта</string>
+    <string name="button_service_desc">Переназначает кнопки пульта: открыть приложение, недавние, главный экран Orbit и т.д. Читает только нажатия кнопок, назначенных в настройках Orbit.</string>
 </resources>

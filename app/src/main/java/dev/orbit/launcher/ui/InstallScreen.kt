@@ -181,10 +181,12 @@ private fun StoreTab(vm: MainViewModel, guard: (() -> Unit) -> Unit) {
                     OrbitButton("Обновить", icon = Icons.Filled.Refresh, onClick = vm::loadCatalog)
                 }
             }
-            items(c.items, key = { it.url }) { item ->
+            items(c.items, key = { it.key }) { item ->
                 // apps в ключе — пересчёт статуса после установки/удаления
                 val installed = remember(item.pkg, apps) { vm.repo.installedVersion(item.pkg) }
-                CatalogRow(item, installed) { guard { vm.installUrl(item.url, item.name) } }
+                CatalogRow(item, installed) {
+                    if (item.store) vm.openStore(item.pkg!!) else guard { vm.installUrl(item.url, item.name) }
+                }
             }
             item { Spacer(Modifier.height(80.dp)) }
         }
@@ -211,7 +213,11 @@ private fun CatalogRow(item: CatalogItem, installedVersion: String?, onInstall: 
             }
         }
         OrbitButton(
-            text = if (installedVersion != null) "Обновить" else "Установить",
+            text = when {
+                item.store -> if (installedVersion != null) "Play Маркет" else "Установить из Play"
+                installedVersion != null -> "Обновить"
+                else -> "Установить"
+            },
             icon = if (installedVersion != null) Icons.Filled.Refresh else Icons.Filled.Add,
             onClick = onInstall,
         )

@@ -7,8 +7,13 @@ data class CatalogItem(
     val name: String,
     val pkg: String?,
     val description: String,
+    /** Прямая ссылка на APK; пусто для приложений из Play Маркета */
     val url: String,
-)
+    /** true — ставится через Play Маркет (нет официального APK) */
+    val store: Boolean = false,
+) {
+    val key: String get() = url.ifEmpty { "store:$pkg" }
+}
 
 sealed interface CatalogState {
     data object Loading : CatalogState
@@ -24,6 +29,7 @@ object Catalog {
     /**
      * Формат:
      * { "apps": [ { "name": "...", "package": "...", "description": "...", "url": "https://....apk" } ] }
+     * Для Play Маркета вместо url: "store": true (нужен "package").
      */
     fun parse(json: String): List<CatalogItem> {
         val arr = JSONObject(json).getJSONArray("apps")
@@ -31,12 +37,15 @@ object Catalog {
             val o = arr.getJSONObject(i)
             val url = o.optString("url").trim()
             val name = o.optString("name").trim()
-            if (url.isEmpty() || name.isEmpty()) return@mapNotNull null
+            val pkg = o.optString("package").trim().ifEmpty { null }
+            val store = o.optBoolean("store", false) && pkg != null
+            if (name.isEmpty() || (url.isEmpty() && !store)) return@mapNotNull null
             CatalogItem(
                 name = name,
-                pkg = o.optString("package").trim().ifEmpty { null },
+                pkg = pkg,
                 description = o.optString("description").trim(),
                 url = url,
+                store = store,
             )
         }
     }

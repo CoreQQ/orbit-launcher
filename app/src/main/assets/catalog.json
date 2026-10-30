@@ -1,6 +1,12 @@
 {
   "apps": [
     {
+      "name": "AirScreen (AirPlay)",
+      "package": "com.ionitech.airscreen",
+      "description": "Трансляция экрана и видео с iPhone/iPad/Mac по AirPlay. Ставится из Play Маркета; в его настройках включите автозапуск.",
+      "store": true
+    },
+    {
       "name": "SmartTube",
       "package": "com.teamsmart.videomanager.tv",
       "description": "YouTube без рекламы: SponsorBlock, 4K/HDR, фоновое воспроизведение. Стабильная версия.",

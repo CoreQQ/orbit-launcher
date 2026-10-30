@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -40,6 +41,7 @@ import androidx.tv.material3.Text
 import dev.orbit.launcher.BuildConfig
 import dev.orbit.launcher.MainViewModel
 import dev.orbit.launcher.install.ApkInstaller
+import dev.orbit.launcher.keys.ButtonStore
 import kotlinx.coroutines.delay
 
 @Composable
@@ -54,12 +56,15 @@ fun SettingsScreen(vm: MainViewModel) {
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     val canInstall = remember(lifecycleState) { vm.canInstall() }
     val hiddenApps = remember(apps, hidden) { apps.filter { it.pkg in hidden } }
+    val bindings by vm.bindings.collectAsStateWithLifecycle()
+    val serviceOn = remember(lifecycleState) { ButtonStore.isServiceEnabled(context) }
 
     LaunchedEffect(Unit) {
         delay(60)
         runCatching { first.requestFocus() }
     }
 
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -103,6 +108,8 @@ fun SettingsScreen(vm: MainViewModel) {
                 onClick = vm::refresh,
             )
         }
+
+        buttonsSection(vm, bindings, serviceOn) { openAccessibilitySettings(vm) }
 
         item { SectionTitle("СИСТЕМА", Modifier.padding(start = 4.dp, top = 12.dp)) }
         item {
@@ -174,4 +181,7 @@ fun SettingsScreen(vm: MainViewModel) {
             }
         }
     }
+    LearnOverlay(vm)
+    }
+    ButtonDialogs(vm)
 }
